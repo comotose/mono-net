@@ -3,7 +3,7 @@
         <h1 class="font-medium text-lg text-white tracking-tight glitch-hover inline-block">Сообщения</h1>
     </x-slot>
 
-    <div class="max-w-xl mx-auto px-4 py-10">
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-10">
         @if ($partners->isEmpty())
             <p class="text-sm text-white/50">Нет диалогов. Откройте профиль пользователя и нажмите «Написать сообщение».</p>
         @else

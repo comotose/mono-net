@@ -27,7 +27,7 @@
         </div>
     </x-slot>
 
-    <div class="max-w-xl mx-auto px-4 py-10 space-y-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         @if ($user->bio)
             <p class="text-sm text-white/70 whitespace-pre-wrap border border-white/10 p-4">{{ $user->bio }}</p>
         @endif

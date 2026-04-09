@@ -3,7 +3,7 @@
         <h1 class="font-medium text-lg text-white tracking-tight glitch-hover inline-block">Поиск друзей</h1>
     </x-slot>
 
-    <div class="max-w-xl mx-auto px-4 py-10 space-y-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <form method="get" action="{{ route('search.friends') }}" class="space-y-2">
             <label for="q" class="block text-xs uppercase tracking-widest text-white/40">Имя, email или о себе</label>
             <input

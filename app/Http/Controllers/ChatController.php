@@ -56,15 +56,46 @@ class ChatController extends Controller
         abort_if($user->id === auth()->id(), 403);
 
         $validated = $request->validate([
-            'body' => ['required', 'string', 'max:5000'],
+            'body' => ['nullable', 'string', 'max:5000', 'required_without_all:attachment,voice'],
+            'attachment' => ['nullable', 'file', 'max:10240', 'required_without_all:body,voice'],
+            'voice' => ['nullable', 'file', 'max:10240', 'mimetypes:audio/webm,audio/ogg,audio/mp3,audio/mpeg,audio/mp4,audio/wav', 'required_without_all:body,attachment'],
         ], [], [
             'body' => 'сообщение',
+            'attachment' => 'файл',
+            'voice' => 'голосовое сообщение',
         ]);
+
+        $type = 'text';
+        $attachmentPath = null;
+        $attachmentOriginalName = null;
+        $attachmentMime = null;
+        $attachmentSize = null;
+
+        if ($request->hasFile('voice')) {
+            $voice = $request->file('voice');
+            $type = 'voice';
+            $attachmentPath = $voice->store('messages/voices', 'public');
+            $attachmentOriginalName = $voice->getClientOriginalName() ?: 'voice-message.webm';
+            $attachmentMime = $voice->getClientMimeType();
+            $attachmentSize = $voice->getSize();
+        } elseif ($request->hasFile('attachment')) {
+            $attachment = $request->file('attachment');
+            $attachmentMime = $attachment->getClientMimeType();
+            $type = str_starts_with((string) $attachmentMime, 'image/') ? 'image' : 'file';
+            $attachmentPath = $attachment->store('messages/attachments', 'public');
+            $attachmentOriginalName = $attachment->getClientOriginalName();
+            $attachmentSize = $attachment->getSize();
+        }
 
         $message = Message::create([
             'sender_id' => $request->user()->id,
             'receiver_id' => $user->id,
-            'body' => $validated['body'],
+            'body' => isset($validated['body']) ? trim($validated['body']) : null,
+            'type' => $type,
+            'attachment_path' => $attachmentPath,
+            'attachment_original_name' => $attachmentOriginalName,
+            'attachment_mime' => $attachmentMime,
+            'attachment_size' => $attachmentSize,
         ]);
 
         $message->load('sender');

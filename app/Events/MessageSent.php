@@ -36,7 +36,14 @@ class MessageSent implements ShouldBroadcast
             'message' => [
                 'id' => $this->message->id,
                 'body' => $this->message->body,
+                'type' => $this->message->type,
                 'created_at' => $this->message->created_at->toIso8601String(),
+                'attachment' => [
+                    'url' => $this->message->attachmentUrl(),
+                    'name' => $this->message->attachment_original_name,
+                    'mime' => $this->message->attachment_mime,
+                    'size' => $this->message->attachment_size,
+                ],
                 'sender' => [
                     'id' => $this->message->sender->id,
                     'name' => $this->message->sender->name,

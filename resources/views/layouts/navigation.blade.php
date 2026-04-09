@@ -1,5 +1,5 @@
 <nav x-data="{ open: false }" class="border-b border-white/10 bg-black">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-3 py-3 sm:py-0 sm:h-14 sm:flex-row sm:justify-between sm:items-center">
             <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center gap-6 sm:gap-8 flex-1 min-w-0">
@@ -7,14 +7,11 @@
                         {{ config('app.name', 'MONO') }}
                     </a>
                     <form method="get" action="{{ route('search.friends') }}" class="hidden md:flex flex-1 max-w-[min(280px,100%)]" title="Поиск: Enter">
-                        <input type="search" name="q" value="{{ request('q') }}" placeholder="Поиск… Enter" autocomplete="off" class="mono-search-input text-xs py-1.5" />
+                        <input type="search" name="q" value="{{ request('q') }}" placeholder="Поиск… " autocomplete="off" class="mono-search-input text-xs py-1.5" />
                     </form>
                     <div class="hidden sm:flex gap-5 items-center shrink-0">
                         <a href="{{ route('feed.index') }}" class="glitch-hover text-xs {{ request()->routeIs('feed.*') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
                             Лента
-                        </a>
-                        <a href="{{ route('search.friends') }}" class="glitch-hover text-xs {{ request()->routeIs('search.friends') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
-                            Поиск
                         </a>
                         <a href="{{ route('messages.index') }}" class="glitch-hover text-xs {{ request()->routeIs('messages.*') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
                             Сообщения
@@ -56,7 +53,6 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-white/10">
         <div class="px-4 pt-2 pb-4 space-y-2">
             <a href="{{ route('feed.index') }}" class="block text-sm text-white/80">Лента</a>
-            <a href="{{ route('search.friends') }}" class="block text-sm text-white/80">Поиск друзей</a>
             <a href="{{ route('messages.index') }}" class="block text-sm text-white/80">Сообщения</a>
             <a href="{{ route('profile.edit') }}" class="block text-sm text-white/80">Настройки</a>
             <a href="{{ route('profile.show', Auth::user()) }}" class="block text-sm text-white/80">Профиль</a>
