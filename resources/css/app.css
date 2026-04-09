@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    /* Поле поиска (только инпут, отправка по Enter) */
+    .mono-search-input {
+        @apply w-full rounded-lg border border-white/15 bg-black/70 px-3 py-2 text-sm text-white;
+        @apply shadow-[inset_0_1px_3px_rgba(0,0,0,0.45)];
+        @apply placeholder:text-white/35;
+        @apply transition-all duration-300 ease-out;
+        @apply focus:border-white/40 focus:bg-black/90 focus:outline-none focus:ring-2 focus:ring-white/10;
+    }
+
+    /* Текстовые области: рамка, внутренняя глубина, мягкий фокус */
+    .mono-textarea {
+        @apply w-full resize-y rounded-xl border border-white/15 px-4 py-3.5 text-sm leading-relaxed text-white;
+        @apply placeholder:text-white/30;
+        @apply min-h-[7rem];
+        @apply transition-[border-color,box-shadow] duration-300 ease-out;
+        @apply focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/10;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.55) 100%);
+        box-shadow:
+            inset 0 2px 6px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .mono-textarea:focus {
+        box-shadow:
+            inset 0 2px 8px rgba(0, 0, 0, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.07),
+            0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .mono-textarea.mono-textarea--compact {
+        @apply min-h-[4.25rem] rounded-lg py-2.5 px-3 text-sm leading-normal;
+    }
+}
+
+@layer utilities {
+    /* Мягкое свечение заголовков без резких смещений */
+    .glitch-text {
+        text-shadow: 0 0 32px rgba(255, 255, 255, 0.08);
+        transition: text-shadow 0.6s ease;
+    }
+
+    /* Плавные hover: без бесконечной «дрожи» */
+    .glitch-hover {
+        transition:
+            color 0.35s ease,
+            opacity 0.35s ease,
+            transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+            text-shadow 0.5s ease,
+            border-color 0.35s ease,
+            background-color 0.35s ease;
+    }
+
+    .glitch-hover:hover {
+        transform: translateY(-1px);
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Карточки: лёгкий подъём вместо skew */
+    .anomaly-tilt {
+        transition:
+            transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.45s ease,
+            box-shadow 0.55s ease;
+    }
+
+    .anomaly-tilt:hover {
+        transform: translateY(-3px) scale(1.008);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .anomaly-scanlines {
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(255, 255, 255, 0.02) 2px,
+            rgba(255, 255, 255, 0.02) 4px
+        );
+        pointer-events: none;
+    }
+
+    .anomaly-noise {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+    }
+}
