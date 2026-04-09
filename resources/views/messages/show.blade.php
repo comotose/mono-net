@@ -30,7 +30,9 @@
                                 📎 {{ $message->attachment_original_name ?: 'Скачать файл' }}
                             </a>
                         @endif
-                        <p class="text-[10px] text-white/30 mt-1">{{ $message->created_at->format('d.m.Y H:i') }}</p>
+                        <p class="text-[10px] text-white/30 mt-1" data-chat-time="{{ $message->created_at->toIso8601String() }}">
+                            {{ $message->created_at->format('d.m.Y H:i') }}
+                        </p>
                     </div>
                 </div>
             @endforeach
@@ -80,6 +82,20 @@
         <script>
             window.chatPartnerId = "{{ $user->id }}";
             window.chatCurrentUserId = "{{ auth()->id() }}";
+            window.formatChatTimestamp = (value) => {
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) {
+                    return '';
+                }
+
+                return new Intl.DateTimeFormat(navigator.language || 'ru-RU', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }).format(date);
+            };
 
             document.addEventListener('DOMContentLoaded', () => {
                 const form = document.getElementById('message-form');
@@ -97,6 +113,17 @@
                 if (!form || !bodyInput || !attachmentInput || !voiceInput) {
                     return;
                 }
+
+                document.querySelectorAll('[data-chat-time]').forEach((el) => {
+                    const iso = el.getAttribute('data-chat-time');
+                    if (!iso) {
+                        return;
+                    }
+                    const formatted = window.formatChatTimestamp(iso);
+                    if (formatted) {
+                        el.textContent = formatted;
+                    }
+                });
 
                 let recorder = null;
                 let audioChunks = [];

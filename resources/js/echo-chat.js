@@ -70,8 +70,13 @@ if (key) {
 
             const time = document.createElement('p');
             time.className = 'text-[10px] text-white/30 mt-1';
-            const d = new Date(message.created_at);
-            time.textContent = d.toLocaleString('ru-RU');
+            const formatter = typeof window.formatChatTimestamp === 'function'
+                ? window.formatChatTimestamp
+                : (value) => {
+                      const d = new Date(value);
+                      return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(navigator.language || 'ru-RU');
+                  };
+            time.textContent = formatter(message.created_at);
             bubble.appendChild(time);
 
             return bubble;

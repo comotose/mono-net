@@ -58,8 +58,17 @@ class ChatController extends Controller
         $validated = $request->validate([
             'body' => ['nullable', 'string', 'max:5000', 'required_without_all:attachment,voice'],
             'attachment' => ['nullable', 'file', 'max:10240', 'required_without_all:body,voice'],
-            'voice' => ['nullable', 'file', 'max:10240', 'mimetypes:audio/webm,audio/ogg,audio/mp3,audio/mpeg,audio/mp4,audio/wav', 'required_without_all:body,attachment'],
-        ], [], [
+            'voice' => ['nullable', 'file', 'max:10240', 'required_without_all:body,attachment'],
+        ], [
+            'body.required_without_all' => 'Введите сообщение или прикрепите файл/голосовое.',
+            'attachment.required_without_all' => 'Введите сообщение или прикрепите файл/голосовое.',
+            'voice.required_without_all' => 'Введите сообщение или прикрепите файл/голосовое.',
+            'body.max' => 'Сообщение не должно быть длиннее :max символов.',
+            'attachment.max' => 'Размер файла не должен превышать 10 МБ.',
+            'voice.max' => 'Размер голосового сообщения не должен превышать 10 МБ.',
+            'attachment.file' => 'В поле файла должно быть передано корректное вложение.',
+            'voice.file' => 'Голосовое сообщение должно быть корректным файлом.',
+        ], [
             'body' => 'сообщение',
             'attachment' => 'файл',
             'voice' => 'голосовое сообщение',
