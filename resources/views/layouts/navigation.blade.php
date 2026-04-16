@@ -5,7 +5,7 @@
         $roleLabel = match ($navUser->role) {
             'admin' => 'Администратор',
             'moderator' => 'Модератор',
-            default => 'Пользователь',
+            default => null,
         };
     @endphp
     <div class="w-full px-4 sm:px-6 lg:px-8">
@@ -43,7 +43,9 @@
                     <a href="{{ route('profile.show', Auth::user()) }}" class="glitch-hover text-xs text-white/80 hover:text-white max-w-[10rem] truncate">
                         {{ Auth::user()->name }}
                     </a>
-                    <span class="text-[10px] border border-white/20 px-2 py-0.5 text-white/60">{{ $roleLabel }}</span>
+                    @if ($roleLabel)
+                        <span class="text-[10px] border border-white/20 px-2 py-0.5 text-white/60">{{ $roleLabel }}</span>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="glitch-hover text-xs text-white/50 hover:text-white">
@@ -80,7 +82,9 @@
             </a>
             <a href="{{ route('profile.edit') }}" class="block text-sm text-white/80">Настройки</a>
             <a href="{{ route('profile.show', Auth::user()) }}" class="block text-sm text-white/80">Профиль</a>
-            <p class="text-xs text-white/40">{{ $roleLabel }}</p>
+            @if ($roleLabel)
+                <p class="text-xs text-white/40">{{ $roleLabel }}</p>
+            @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="text-sm text-white/50">Выйти</button>

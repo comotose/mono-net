@@ -49,6 +49,9 @@ if (key) {
                 link.appendChild(img);
                 bubble.appendChild(link);
             } else if (url && mime.startsWith('audio/')) {
+                bubble.classList.remove('max-w-[85%]');
+                bubble.classList.add('chat-bubble--voice');
+
                 const voiceWrap = document.createElement('div');
                 voiceWrap.className = 'voice-message-card mt-2';
 

@@ -12,7 +12,7 @@
             @foreach ($messages as $message)
                 @php $mine = $message->sender_id === auth()->id(); @endphp
                 <div class="message-row flex {{ $mine ? 'justify-end' : 'justify-start' }}">
-                    <div class="chat-bubble max-w-[85%] border border-white/15 px-3 py-2 text-sm {{ $mine ? 'bg-white/10' : 'bg-black' }}">
+                    <div class="chat-bubble {{ $message->isAudioAttachment() ? 'chat-bubble--voice' : 'max-w-[85%]' }} border border-white/15 px-3 py-2 text-sm {{ $mine ? 'bg-white/10' : 'bg-black' }}">
                         @if ($message->body)
                             <p class="whitespace-pre-wrap text-white/90">{{ $message->body }}</p>
                         @endif
