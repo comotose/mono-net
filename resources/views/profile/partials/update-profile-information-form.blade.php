@@ -62,6 +62,28 @@
             @endif
         </div>
 
+        <div class="space-y-3 border border-white/10 p-4">
+            <h3 class="text-sm text-white/90">Настройки уведомлений</h3>
+            <p class="text-xs text-white/50">Выберите, какие события будут приходить в раздел «Уведомления».</p>
+
+            <label class="flex items-center gap-3 text-sm text-white/80">
+                <input type="checkbox" name="notify_on_message" value="1" {{ old('notify_on_message', $user->notify_on_message) ? 'checked' : '' }} class="border-white/30 bg-black text-white focus:ring-white/20" />
+                Новые сообщения
+            </label>
+            <label class="flex items-center gap-3 text-sm text-white/80">
+                <input type="checkbox" name="notify_on_follow" value="1" {{ old('notify_on_follow', $user->notify_on_follow) ? 'checked' : '' }} class="border-white/30 bg-black text-white focus:ring-white/20" />
+                Подписки на аккаунт
+            </label>
+            <label class="flex items-center gap-3 text-sm text-white/80">
+                <input type="checkbox" name="notify_on_like" value="1" {{ old('notify_on_like', $user->notify_on_like) ? 'checked' : '' }} class="border-white/30 bg-black text-white focus:ring-white/20" />
+                Лайки публикаций
+            </label>
+            <label class="flex items-center gap-3 text-sm text-white/80">
+                <input type="checkbox" name="notify_on_comment" value="1" {{ old('notify_on_comment', $user->notify_on_comment) ? 'checked' : '' }} class="border-white/30 bg-black text-white focus:ring-white/20" />
+                Комментарии к публикациям
+            </label>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

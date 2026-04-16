@@ -12,7 +12,7 @@
             @foreach ($messages as $message)
                 @php $mine = $message->sender_id === auth()->id(); @endphp
                 <div class="message-row flex {{ $mine ? 'justify-end' : 'justify-start' }}">
-                    <div class="max-w-[85%] border border-white/15 px-3 py-2 text-sm {{ $mine ? 'bg-white/10' : 'bg-black' }}">
+                    <div class="chat-bubble max-w-[85%] border border-white/15 px-3 py-2 text-sm {{ $mine ? 'bg-white/10' : 'bg-black' }}">
                         @if ($message->body)
                             <p class="whitespace-pre-wrap text-white/90">{{ $message->body }}</p>
                         @endif
@@ -22,9 +22,15 @@
                                 <img src="{{ $message->attachmentUrl() }}" alt="{{ $message->attachment_original_name }}" class="max-h-56 rounded border border-white/15 object-contain bg-black/40" />
                             </a>
                         @elseif ($message->attachment_path && $message->isAudioAttachment())
-                            <audio controls class="w-full mt-2">
-                                <source src="{{ $message->attachmentUrl() }}" type="{{ $message->attachment_mime }}">
-                            </audio>
+                            <div class="voice-message-card mt-2">
+                                <div class="voice-message-label">
+                                    <span class="voice-dot" aria-hidden="true"></span>
+                                    Голосовое сообщение
+                                </div>
+                                <audio controls class="voice-audio-player">
+                                    <source src="{{ $message->attachmentUrl() }}" type="{{ $message->attachment_mime }}">
+                                </audio>
+                            </div>
                         @elseif ($message->attachment_path)
                             <a href="{{ $message->attachmentUrl() }}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-white/80 hover:text-white underline underline-offset-2">
                                 📎 {{ $message->attachment_original_name ?: 'Скачать файл' }}
@@ -161,6 +167,8 @@
                         const url = URL.createObjectURL(file);
                         previewImage.src = url;
                         previewImage.classList.remove('hidden');
+                    } else if (file.type.startsWith('audio/')) {
+                        previewName.textContent = `${file.name} (голосовое/аудио)`;
                     }
                 };
 

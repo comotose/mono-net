@@ -10,7 +10,7 @@
             <a href="{{ route('profile.show', $post->user) }}" class="glitch-hover text-sm font-medium text-white">{{ $post->user->name }}</a>
             <p class="text-xs text-white/35">{{ $post->created_at->translatedFormat('d.m.Y H:i') }}</p>
         </div>
-        @if ($post->user_id === auth()->id())
+        @if ($post->user_id === auth()->id() || auth()->user()->hasRole('admin', 'moderator'))
             <form action="{{ route('posts.destroy', $post) }}" method="post" onsubmit="return confirm('Удалить публикацию?');">
                 @csrf
                 @method('DELETE')
@@ -47,7 +47,7 @@
                 <li class="text-sm border-l border-white/10 pl-3">
                     <div class="flex justify-between gap-2">
                         <span class="text-white/80"><span class="text-white font-medium">{{ $comment->user->name }}</span> — {{ $comment->body }}</span>
-                        @if ($comment->user_id === auth()->id() || $post->user_id === auth()->id())
+                        @if ($comment->user_id === auth()->id() || $post->user_id === auth()->id() || auth()->user()->hasRole('admin', 'moderator'))
                             <form action="{{ route('comments.destroy', $comment) }}" method="post" class="shrink-0">
                                 @csrf
                                 @method('DELETE')

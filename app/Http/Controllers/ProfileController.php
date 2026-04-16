@@ -28,6 +28,10 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $data['notify_on_message'] = $request->boolean('notify_on_message');
+        $data['notify_on_follow'] = $request->boolean('notify_on_follow');
+        $data['notify_on_like'] = $request->boolean('notify_on_like');
+        $data['notify_on_comment'] = $request->boolean('notify_on_comment');
 
         if ($request->hasFile('avatar')) {
             $user = $request->user();

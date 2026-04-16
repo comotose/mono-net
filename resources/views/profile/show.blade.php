@@ -5,6 +5,9 @@
                 <img src="{{ $user->avatarUrl() }}" alt="" class="w-16 h-16 rounded-full border border-white/20 object-cover" width="64" height="64" />
                 <div>
                     <h1 class="font-medium text-lg text-white glitch-hover inline-block">{{ $user->name }}</h1>
+                    <p class="text-[11px] text-white/45 uppercase tracking-widest mt-0.5">
+                        {{ $user->role === 'admin' ? 'Администратор' : ($user->role === 'moderator' ? 'Модератор' : 'Пользователь') }}
+                    </p>
                     <p class="text-xs text-white/40 mt-1">{{ $followersCount }} подписчиков · {{ $followingCount }} подписок</p>
                 </div>
             </div>

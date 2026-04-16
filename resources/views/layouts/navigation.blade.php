@@ -1,4 +1,13 @@
 <nav x-data="{ open: false }" class="border-b border-white/10 bg-black">
+    @php
+        $navUser = Auth::user();
+        $unreadNotificationsCount = $navUser->unreadNotifications()->count();
+        $roleLabel = match ($navUser->role) {
+            'admin' => 'Администратор',
+            'moderator' => 'Модератор',
+            default => 'Пользователь',
+        };
+    @endphp
     <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-3 py-3 sm:py-0 sm:h-14 sm:flex-row sm:justify-between sm:items-center">
             <div class="flex items-center justify-between gap-4">
@@ -16,6 +25,14 @@
                         <a href="{{ route('messages.index') }}" class="glitch-hover text-xs {{ request()->routeIs('messages.*') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
                             Сообщения
                         </a>
+                        <a href="{{ route('notifications.index') }}" class="glitch-hover text-xs {{ request()->routeIs('notifications.*') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
+                            Уведомления
+                            @if ($unreadNotificationsCount > 0)
+                                <span class="ml-1 inline-flex min-w-[1.1rem] justify-center px-1 rounded-full border border-white/30 text-[10px] leading-4">
+                                    {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                                </span>
+                            @endif
+                        </a>
                         <a href="{{ route('profile.edit') }}" class="glitch-hover text-xs {{ request()->routeIs('profile.edit') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
                             Настройки
                         </a>
@@ -26,6 +43,7 @@
                     <a href="{{ route('profile.show', Auth::user()) }}" class="glitch-hover text-xs text-white/80 hover:text-white max-w-[10rem] truncate">
                         {{ Auth::user()->name }}
                     </a>
+                    <span class="text-[10px] border border-white/20 px-2 py-0.5 text-white/60">{{ $roleLabel }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="glitch-hover text-xs text-white/50 hover:text-white">
@@ -54,8 +72,15 @@
         <div class="px-4 pt-2 pb-4 space-y-2">
             <a href="{{ route('feed.index') }}" class="block text-sm text-white/80">Лента</a>
             <a href="{{ route('messages.index') }}" class="block text-sm text-white/80">Сообщения</a>
+            <a href="{{ route('notifications.index') }}" class="block text-sm text-white/80">
+                Уведомления
+                @if ($unreadNotificationsCount > 0)
+                    ({{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }})
+                @endif
+            </a>
             <a href="{{ route('profile.edit') }}" class="block text-sm text-white/80">Настройки</a>
             <a href="{{ route('profile.show', Auth::user()) }}" class="block text-sm text-white/80">Профиль</a>
+            <p class="text-xs text-white/40">{{ $roleLabel }}</p>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="text-sm text-white/50">Выйти</button>

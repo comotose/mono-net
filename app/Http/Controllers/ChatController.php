@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\MessageSent;
 use App\Models\Message;
 use App\Models\User;
+use App\Notifications\NewMessageNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -108,6 +109,10 @@ class ChatController extends Controller
         ]);
 
         $message->load('sender');
+
+        if ($user->notify_on_message) {
+            $user->notify(new NewMessageNotification($message));
+        }
 
         try {
             broadcast(new MessageSent($message));

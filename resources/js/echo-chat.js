@@ -21,7 +21,7 @@ if (key) {
     if (window.Echo && uid) {
         const renderMessageBubble = (message) => {
             const bubble = document.createElement('div');
-            bubble.className = 'max-w-[85%] border border-white/15 px-3 py-2 text-sm bg-black';
+            bubble.className = 'chat-bubble max-w-[85%] border border-white/15 px-3 py-2 text-sm bg-black';
 
             if (message.body) {
                 const body = document.createElement('p');
@@ -49,15 +49,24 @@ if (key) {
                 link.appendChild(img);
                 bubble.appendChild(link);
             } else if (url && mime.startsWith('audio/')) {
+                const voiceWrap = document.createElement('div');
+                voiceWrap.className = 'voice-message-card mt-2';
+
+                const voiceLabel = document.createElement('div');
+                voiceLabel.className = 'voice-message-label';
+                voiceLabel.innerHTML = '<span class="voice-dot" aria-hidden="true"></span>Голосовое сообщение';
+
                 const audio = document.createElement('audio');
-                audio.className = 'w-full mt-2';
+                audio.className = 'voice-audio-player';
                 audio.controls = true;
 
                 const source = document.createElement('source');
                 source.src = url;
                 source.type = mime;
                 audio.appendChild(source);
-                bubble.appendChild(audio);
+                voiceWrap.appendChild(voiceLabel);
+                voiceWrap.appendChild(audio);
+                bubble.appendChild(voiceWrap);
             } else if (url) {
                 const link = document.createElement('a');
                 link.href = url;

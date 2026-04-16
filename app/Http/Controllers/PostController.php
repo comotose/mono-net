@@ -47,6 +47,11 @@ class PostController extends Controller
 
     private function authorizePost(Post $post): void
     {
-        abort_unless($post->user_id === auth()->id(), 403);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        abort_unless(
+            $post->user_id === $user->id || $user->hasRole('admin', 'moderator'),
+            403
+        );
     }
 }

@@ -22,6 +22,22 @@
 
         @include('layouts.navigation')
 
+        @php
+            $statusMessages = [
+                'message-sent' => 'Сообщение отправлено.',
+                'followed' => 'Подписка оформлена.',
+                'unfollowed' => 'Подписка отменена.',
+                'comment-added' => 'Комментарий добавлен.',
+                'comment-deleted' => 'Комментарий удален.',
+            ];
+            $statusText = session('status') ? ($statusMessages[session('status')] ?? null) : null;
+        @endphp
+        @if ($statusText)
+            <div class="w-full px-4 sm:px-6 lg:px-8 pt-4 relative z-20">
+                <p class="text-sm text-white/70 border border-white/15 bg-black/70 px-3 py-2">{{ $statusText }}</p>
+            </div>
+        @endif
+
         @if (isset($header))
             <header class="border-b border-white/10">
                 <div class="w-full px-4 sm:px-6 lg:px-8 py-6">

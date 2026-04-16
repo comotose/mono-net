@@ -20,6 +20,11 @@ class User extends Authenticatable
         'password',
         'avatar',
         'bio',
+        'role',
+        'notify_on_message',
+        'notify_on_follow',
+        'notify_on_like',
+        'notify_on_comment',
     ];
 
     protected $hidden = [
@@ -30,7 +35,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'notify_on_message' => 'bool',
+        'notify_on_follow' => 'bool',
+        'notify_on_like' => 'bool',
+        'notify_on_comment' => 'bool',
     ];
+
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isModerator(): bool
+    {
+        return $this->hasRole('moderator');
+    }
 
     public function posts(): HasMany
     {
