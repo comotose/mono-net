@@ -62,10 +62,38 @@ php artisan key:generate
 
 - Если realtime не нужен, оставь:
   - `BROADCAST_DRIVER=log`
-- Если нужен realtime через Pusher:
+- Если нужен realtime через Pusher Cloud:
   - `BROADCAST_DRIVER=pusher`
   - заполни `PUSHER_APP_ID`, `PUSHER_APP_KEY`, `PUSHER_APP_SECRET`, `PUSHER_APP_CLUSTER`
   - проверь `VITE_PUSHER_*` переменные (берутся из `PUSHER_*`)
+- Если нужен локальный websocket без Pusher Cloud:
+  - возьми шаблон из `.env.websocket.example`
+  - это конфиг под `Soketi`, который понимает Pusher protocol
+  - ключевые значения обычно такие:
+    - `BROADCAST_DRIVER=pusher`
+    - `PUSHER_HOST=127.0.0.1`
+    - `PUSHER_PORT=6001`
+    - `PUSHER_SCHEME=http`
+    - `PUSHER_APP_ID=mono-net`
+    - `PUSHER_APP_KEY=mono-net-key`
+    - `PUSHER_APP_SECRET=mono-net-secret`
+  - затем пересобери фронтенд, чтобы Vite подхватил `VITE_PUSHER_*`:
+    - `npm run build` или `npm run dev`
+
+### Локальный websocket через Soketi
+
+Пример запуска Soketi в Docker:
+
+```bash
+docker run --rm -p 6001:6001 -p 9601:9601 -e SOKETI_DEFAULT_APP_ID=mono-net -e SOKETI_DEFAULT_APP_KEY=mono-net-key -e SOKETI_DEFAULT_APP_SECRET=mono-net-secret quay.io/soketi/soketi:latest-16-alpine
+```
+
+После этого:
+
+1. Скопируй `.env.websocket.example` в `.env` или перенеси из него только блок `PUSHER_*`.
+2. Выполни `php artisan config:clear`.
+3. Пересобери фронтенд: `npm run build`.
+4. Открой сайт заново.
 
 Для загрузки файлов в чат и посты:
 
@@ -124,6 +152,7 @@ php artisan test
   - убедись, что выполнен `php artisan storage:link`.
 - Сообщения не приходят realtime:
   - проверь `BROADCAST_DRIVER`;
-  - для Pusher проверь корректность всех `PUSHER_*` ключей.
+  - для Pusher/Soketi проверь корректность всех `PUSHER_*` ключей;
+  - если websocket не поднят, сайт будет работать через polling, но не через сокет realtime.
 - Не применяется frontend:
   - убедись, что запущен `npm run dev` или выполнен `npm run build`.

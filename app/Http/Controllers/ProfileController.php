@@ -32,6 +32,7 @@ class ProfileController extends Controller
         $data['notify_on_follow'] = $request->boolean('notify_on_follow');
         $data['notify_on_like'] = $request->boolean('notify_on_like');
         $data['notify_on_comment'] = $request->boolean('notify_on_comment');
+        $data['interest_tags'] = $this->normalizeInterestTags($data['interest_tags'] ?? '');
 
         if ($request->hasFile('avatar')) {
             $user = $request->user();
@@ -52,6 +53,32 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function normalizeInterestTags(?string $value): array
+    {
+        $tags = preg_split('/[,;\r\n]+/u', (string) $value) ?: [];
+        $normalized = [];
+
+        foreach ($tags as $tag) {
+            $tag = trim($tag);
+
+            if ($tag === '') {
+                continue;
+            }
+
+            $tag = mb_substr($tag, 0, 32);
+            $key = mb_strtolower($tag);
+
+            if (! array_key_exists($key, $normalized)) {
+                $normalized[$key] = $tag;
+            }
+        }
+
+        return array_slice(array_values($normalized), 0, 12);
     }
 
     /**

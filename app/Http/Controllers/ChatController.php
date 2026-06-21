@@ -6,36 +6,64 @@ use App\Events\MessageSent;
 use App\Models\Message;
 use App\Models\User;
 use App\Notifications\NewMessageNotification;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ChatController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $user = auth()->user();
+        $onlyUnread = $request->boolean('unread');
 
-        $partnerIds = Message::query()
+        $conversationQuery = Message::query()
             ->where(function ($q) use ($user) {
                 $q->where('sender_id', $user->id)->orWhere('receiver_id', $user->id);
-            })
-            ->get()
+            });
+
+        if ($onlyUnread) {
+            $conversationQuery
+                ->where('receiver_id', $user->id)
+                ->whereNull('read_at');
+        }
+
+        $partnerIds = $conversationQuery
+            ->get(['sender_id', 'receiver_id'])
             ->map(fn (Message $m) => $m->sender_id === $user->id ? $m->receiver_id : $m->sender_id)
             ->unique()
             ->values();
 
         $partners = User::query()
             ->whereIn('id', $partnerIds)
+            ->withCount([
+                'sentMessages as unread_messages_count' => fn ($q) => $q
+                    ->where('receiver_id', $user->id)
+                    ->whereNull('read_at'),
+            ])
+            ->orderByDesc('unread_messages_count')
             ->orderBy('name')
             ->get();
 
-        return view('messages.index', compact('partners'));
+        $unreadDialogsCount = Message::query()
+            ->where('receiver_id', $user->id)
+            ->whereNull('read_at')
+            ->distinct('sender_id')
+            ->count('sender_id');
+
+        return view('messages.index', compact('partners', 'onlyUnread', 'unreadDialogsCount'));
     }
 
     public function show(User $user): View
     {
         abort_if($user->id === auth()->id(), 404);
+
+        Message::query()
+            ->where('sender_id', $user->id)
+            ->where('receiver_id', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         $messages = Message::query()
             ->where(function ($q) use ($user) {
@@ -45,14 +73,14 @@ class ChatController extends Controller
                     $q2->where('sender_id', $user->id)->where('receiver_id', auth()->id());
                 });
             })
-            ->with(['sender', 'receiver'])
+            ->with(['sender', 'receiver', 'reactions'])
             ->oldest()
             ->get();
 
         return view('messages.show', compact('user', 'messages'));
     }
 
-    public function store(Request $request, User $user): RedirectResponse
+    public function store(Request $request, User $user): RedirectResponse|JsonResponse
     {
         abort_if($user->id === auth()->id(), 403);
 
@@ -108,7 +136,7 @@ class ChatController extends Controller
             'attachment_size' => $attachmentSize,
         ]);
 
-        $message->load('sender');
+        $message->load(['sender', 'receiver', 'reactions']);
 
         if ($user->notify_on_message) {
             $user->notify(new NewMessageNotification($message));
@@ -118,6 +146,27 @@ class ChatController extends Controller
             broadcast(new MessageSent($message));
         } catch (\Throwable $e) {
             report($e);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('messages._row', ['message' => $message])->render(),
+                'message' => [
+                    'id' => $message->id,
+                    'body' => $message->body,
+                    'type' => $message->type,
+                    'created_at' => $message->created_at->toIso8601String(),
+                    'attachment' => [
+                        'url' => $message->attachmentUrl(),
+                        'name' => $message->attachment_original_name,
+                        'mime' => $message->attachment_mime,
+                    ],
+                    'sender' => [
+                        'id' => $message->sender->id,
+                        'name' => $message->sender->name,
+                    ],
+                ],
+            ], 201);
         }
 
         return redirect()->route('messages.show', $user)->with('status', 'message-sent');

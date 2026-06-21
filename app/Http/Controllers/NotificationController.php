@@ -19,7 +19,7 @@ class NotificationController extends Controller
         return view('notifications.index', compact('notifications'));
     }
 
-    public function read(Request $request, string $notification): RedirectResponse
+    public function read(Request $request, string $notification): RedirectResponse|JsonResponse
     {
         $item = $request->user()
             ->notifications()
@@ -28,12 +28,25 @@ class NotificationController extends Controller
 
         $item->markAsRead();
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $item->id,
+                'url' => $item->data['url'] ?? route('notifications.index'),
+            ]);
+        }
+
         return redirect($item->data['url'] ?? route('notifications.index'));
     }
 
-    public function readAll(Request $request): RedirectResponse
+    public function readAll(Request $request): RedirectResponse|JsonResponse
     {
         $request->user()->unreadNotifications->markAsRead();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+            ]);
+        }
 
         return redirect()->route('notifications.index')->with('status', 'notifications-read');
     }

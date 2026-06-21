@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Message;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class NewMessageNotification extends Notification
@@ -16,10 +17,20 @@ class NewMessageNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     public function toArray(object $notifiable): array
+    {
+        return $this->payload();
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->payload());
+    }
+
+    private function payload(): array
     {
         return [
             'kind' => 'message',
@@ -27,6 +38,7 @@ class NewMessageNotification extends Notification
             'text' => 'Вам написал(а) '.$this->message->sender->name,
             'url' => route('messages.show', $this->message->sender),
             'sender_name' => $this->message->sender->name,
+            'icon' => $this->message->sender->avatarUrl(),
             'message_id' => $this->message->id,
         ];
     }

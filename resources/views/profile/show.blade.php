@@ -2,59 +2,123 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-center gap-4">
-                <img src="{{ $user->avatarUrl() }}" alt="" class="w-16 h-16 rounded-full border border-white/20 object-cover" width="64" height="64" />
+                <img src="{{ $user->avatarUrl() }}" alt="" class="w-16 h-16 rounded-full border object-cover mono-avatar-frame" width="64" height="64" />
                 <div>
-                    <h1 class="font-medium text-lg text-white glitch-hover inline-block">{{ $user->name }}</h1>
-                    <p class="text-[11px] text-white/45 uppercase tracking-widest mt-0.5">
-                        {{ $user->role === 'admin' ? 'Администратор' : ($user->role === 'moderator' ? 'Модератор' : 'Пользователь') }}
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="mono-page-title">{{ $user->name }}</h1>
+                        @include('users._role_badge', ['user' => $user])
+                    </div>
+                    <p class="mono-caption mt-1">
+                        <span data-followers-count="{{ $user->id }}">{{ $followersCount }}</span> подписчиков ·
+                        <span data-following-count="{{ $user->id }}">{{ $followingCount }}</span> подписок
                     </p>
-                    <p class="text-xs text-white/40 mt-1">{{ $followersCount }} подписчиков · {{ $followingCount }} подписок</p>
                 </div>
             </div>
-            @if (! $isSelf)
-                <div>
-                    @if ($isFollowing)
-                        <form action="{{ route('users.unfollow', $user) }}" method="post">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="glitch-hover px-4 py-2 border border-white/30 text-xs uppercase tracking-widest text-white/80 hover:bg-white/10">Отписаться</button>
-                        </form>
-                    @else
-                        <form action="{{ route('users.follow', $user) }}" method="post">
-                            @csrf
-                            <button type="submit" class="glitch-hover px-4 py-2 bg-white text-black text-xs uppercase tracking-widest hover:bg-white/90">Подписаться</button>
-                        </form>
-                    @endif
+            <div class="flex flex-wrap items-center gap-2">
+                <div data-follow-button-target="{{ $user->id }}">
+                    @include('users._follow_button', ['user' => $user, 'isFollowing' => $isFollowing, 'isSelf' => $isSelf])
                 </div>
-            @endif
+                <div data-role-manager-target="{{ $user->id }}">
+                    @include('users._role_manager', ['user' => $user])
+                </div>
+            </div>
         </div>
     </x-slot>
 
-    <div class="w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="page-shell page-stack py-10">
+        @php
+            $interestTags = is_array($user->interest_tags) ? array_filter($user->interest_tags) : [];
+        @endphp
+
         @if ($user->bio)
-            <p class="text-sm text-white/70 whitespace-pre-wrap border border-white/10 p-4">{{ $user->bio }}</p>
+            <p class="mono-surface mono-body-sm whitespace-pre-wrap p-4">{{ $user->bio }}</p>
         @endif
 
-        <div class="flex gap-4 text-xs">
-            <a href="{{ route('messages.show', $user) }}" class="glitch-hover text-white/60 hover:text-white">Написать сообщение</a>
-        </div>
+        @if (! empty($interestTags))
+            <section class="flex flex-wrap gap-2" aria-label="Интересы">
+                @foreach ($interestTags as $tag)
+                    <span class="mono-tag">{{ $tag }}</span>
+                @endforeach
+            </section>
+        @elseif ($isSelf)
+            <a href="{{ route('profile.edit') }}" class="mono-empty-state mono-quiet-link">
+                Добавьте интересы в настройках профиля.
+            </a>
+        @endif
+
+        @unless ($isSelf)
+            <div class="flex gap-4 text-xs">
+                <a href="{{ route('messages.show', $user) }}" class="mono-button-secondary mono-button-secondary--sm">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>Написать</span>
+                </a>
+            </div>
+        @endunless
 
         @if (session('status') === 'followed')
-            <p class="text-sm text-white/50">Вы подписались.</p>
+            <p class="mono-alert">Вы подписались.</p>
         @endif
         @if (session('status') === 'unfollowed')
-            <p class="text-sm text-white/50">Подписка отменена.</p>
+            <p class="mono-alert">Подписка отменена.</p>
         @endif
+
+        <section class="grid gap-6 lg:grid-cols-2">
+            <div class="mono-surface p-4">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <h2 class="mono-section-title">Подписчики</h2>
+                    <span class="mono-counter-pill">{{ $followersCount }}</span>
+                </div>
+
+                @if ($followers->isEmpty())
+                    <p class="mono-caption">Пока нет подписчиков.</p>
+                @else
+                    <ul class="space-y-3">
+                        @foreach ($followers as $follower)
+                            <li>
+                                <a href="{{ route('profile.show', $follower) }}" class="mono-list-link flex items-center gap-3 rounded-xl px-2 py-2">
+                                    <img src="{{ $follower->avatarUrl() }}" alt="" class="h-9 w-9 rounded-full border object-cover mono-avatar-frame" />
+                                    <span class="min-w-0 flex-1 truncate mono-body-sm">{{ $follower->name }}</span>
+                                    @include('users._role_badge', ['user' => $follower])
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
+            <div class="mono-surface p-4">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <h2 class="mono-section-title">Подписки</h2>
+                    <span class="mono-counter-pill">{{ $followingCount }}</span>
+                </div>
+
+                @if ($following->isEmpty())
+                    <p class="mono-caption">Пока нет подписок.</p>
+                @else
+                    <ul class="space-y-3">
+                        @foreach ($following as $followedUser)
+                            <li>
+                                <a href="{{ route('profile.show', $followedUser) }}" class="mono-list-link flex items-center gap-3 rounded-xl px-2 py-2">
+                                    <img src="{{ $followedUser->avatarUrl() }}" alt="" class="h-9 w-9 rounded-full border object-cover mono-avatar-frame" />
+                                    <span class="min-w-0 flex-1 truncate mono-body-sm">{{ $followedUser->name }}</span>
+                                    @include('users._role_badge', ['user' => $followedUser])
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </section>
 
         <div class="space-y-8">
             @forelse ($posts as $post)
                 @include('posts._card', ['post' => $post])
             @empty
-                <p class="text-white/40 text-sm">Нет публикаций.</p>
+                <p class="mono-empty-state">Нет публикаций.</p>
             @endforelse
         </div>
 
-        <div class="text-white/40 text-xs pt-4">
+        <div class="mono-pagination-wrap pt-4">
             {{ $posts->withQueryString()->links() }}
         </div>
     </div>

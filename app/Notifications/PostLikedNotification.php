@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class PostLikedNotification extends Notification
@@ -18,17 +19,28 @@ class PostLikedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     public function toArray(object $notifiable): array
     {
+        return $this->payload();
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->payload());
+    }
+
+    private function payload(): array
+    {
         return [
-            'kind' => 'like',
-            'title' => 'Новый лайк',
-            'text' => $this->actor->name.' оценил(а) вашу публикацию',
+            'kind' => 'reaction',
+            'title' => 'Новая реакция',
+            'text' => $this->actor->name.' отреагировал(а) на вашу публикацию',
             'url' => route('profile.show', $this->actor),
             'actor_name' => $this->actor->name,
+            'icon' => $this->actor->avatarUrl(),
             'post_id' => $this->post->id,
         ];
     }

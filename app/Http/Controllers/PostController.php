@@ -3,44 +3,62 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:10000'],
-            'image' => ['nullable', 'image', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:9'],
+            'images.*' => ['image', 'max:5120'],
         ], [], [
             'content' => 'текст',
-            'image' => 'изображение',
+            'images' => 'изображения',
+            'images.*' => 'изображение',
         ]);
 
-        $path = null;
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
+        $paths = [];
+        foreach ($request->file('images', []) as $image) {
+            $paths[] = $image->store('posts', 'public');
         }
 
-        $request->user()->posts()->create([
+        $post = $request->user()->posts()->create([
             'content' => $validated['content'],
-            'image' => $path,
+            'image' => $paths[0] ?? null,
+            'images' => $paths,
         ]);
+
+        $post->load(['user', 'comments', 'comments.replies', 'reactions']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('posts._card', ['post' => $post])->render(),
+            ], 201);
+        }
 
         return redirect()->route('feed.index')->with('status', 'post-created');
     }
 
-    public function destroy(Post $post): RedirectResponse
+    public function destroy(Request $request, Post $post): RedirectResponse|JsonResponse
     {
         $this->authorizePost($post);
 
-        if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+        foreach ($post->imagePaths() as $path) {
+            Storage::disk('public')->delete($path);
         }
 
         $post->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $post->id,
+            ]);
+        }
 
         return redirect()->route('feed.index')->with('status', 'post-deleted');
     }

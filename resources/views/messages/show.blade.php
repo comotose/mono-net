@@ -1,84 +1,69 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <a href="{{ route('messages.index') }}" class="text-xs text-white/40 hover:text-white glitch-hover">← Назад</a>
-            <img src="{{ $user->avatarUrl() }}" alt="" class="w-9 h-9 rounded-full border border-white/20" />
-            <h1 class="font-medium text-lg text-white glitch-hover">{{ $user->name }}</h1>
+            <a href="{{ route('messages.index') }}" class="mono-quiet-link inline-flex items-center gap-1.5">
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.56l3.22 3.22a.75.75 0 11-1.06 1.06l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 011.06 1.06L5.56 9.25h10.69A.75.75 0 0117 10z" clip-rule="evenodd" />
+                </svg>
+                <span>Назад</span>
+            </a>
+            <img src="{{ $user->avatarUrl() }}" alt="" class="w-9 h-9 rounded-full border mono-avatar-frame" />
+            <h1 class="mono-page-title">{{ $user->name }}</h1>
+            @include('users._role_badge', ['user' => $user])
         </div>
     </x-slot>
 
-    <div class="w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-[72vh]">
-        <div id="messages-list" class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-[50vh]">
+    <div class="page-shell chat-page-shell">
+        <div id="messages-list" class="chat-messages-list">
             @foreach ($messages as $message)
-                @php $mine = $message->sender_id === auth()->id(); @endphp
-                <div class="message-row flex {{ $mine ? 'justify-end' : 'justify-start' }}">
-                    <div class="chat-bubble {{ $message->isAudioAttachment() ? 'chat-bubble--voice' : 'max-w-[85%]' }} border border-white/15 px-3 py-2 text-sm {{ $mine ? 'bg-white/10' : 'bg-black' }}">
-                        @if ($message->body)
-                            <p class="whitespace-pre-wrap text-white/90">{{ $message->body }}</p>
-                        @endif
-
-                        @if ($message->attachment_path && $message->isImageAttachment())
-                            <a href="{{ $message->attachmentUrl() }}" target="_blank" rel="noopener noreferrer" class="block mt-2">
-                                <img src="{{ $message->attachmentUrl() }}" alt="{{ $message->attachment_original_name }}" class="max-h-56 rounded border border-white/15 object-contain bg-black/40" />
-                            </a>
-                        @elseif ($message->attachment_path && $message->isAudioAttachment())
-                            <div class="voice-message-card mt-2">
-                                <div class="voice-message-label">
-                                    <span class="voice-dot" aria-hidden="true"></span>
-                                    Голосовое сообщение
-                                </div>
-                                <audio controls class="voice-audio-player">
-                                    <source src="{{ $message->attachmentUrl() }}" type="{{ $message->attachment_mime }}">
-                                </audio>
-                            </div>
-                        @elseif ($message->attachment_path)
-                            <a href="{{ $message->attachmentUrl() }}" target="_blank" rel="noopener noreferrer" class="inline-flex mt-2 text-xs text-white/80 hover:text-white underline underline-offset-2">
-                                📎 {{ $message->attachment_original_name ?: 'Скачать файл' }}
-                            </a>
-                        @endif
-                        <p class="text-[10px] text-white/30 mt-1" data-chat-time="{{ $message->created_at->toIso8601String() }}">
-                            {{ $message->created_at->format('d.m.Y H:i') }}
-                        </p>
-                    </div>
-                </div>
+                @include('messages._row', ['message' => $message])
             @endforeach
         </div>
 
-        <form id="message-form" action="{{ route('messages.store', $user) }}" method="post" enctype="multipart/form-data" class="mt-auto space-y-2 border-t border-white/10 pt-4">
+        <form id="message-form" action="{{ route('messages.store', $user) }}" method="post" enctype="multipart/form-data" class="chat-composer" data-async-message-form>
             @csrf
             <label for="body" class="sr-only">Сообщение</label>
-            <textarea id="body" name="body" rows="3" placeholder="Введите сообщение…" class="mono-textarea min-h-[5.5rem]">{{ old('body') }}</textarea>
+            <textarea id="body" name="body" rows="1" placeholder="Введите сообщение…" class="mono-textarea mono-chat-textarea" data-autogrow-textarea>{{ old('body') }}</textarea>
 
             <input id="attachment-input" name="attachment" type="file" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.7z,.csv,.json,.xml,.mp4,.mov,.webm,.mp3,.wav,.ogg" />
             <input id="voice-input" name="voice" type="file" class="hidden" accept="audio/*" />
 
-            <div id="attachment-preview" class="hidden border border-white/10 p-2 text-xs text-white/70 space-y-2">
+            <div id="attachment-preview" class="hidden mono-surface mono-surface--soft p-3 text-xs space-y-2">
                 <p id="attachment-name"></p>
-                <img id="image-thumb" src="" alt="" class="hidden max-h-32 rounded border border-white/15 object-contain bg-black/40" />
-                <button id="clear-attachment" type="button" class="text-white/50 hover:text-white">Очистить</button>
+                <img id="image-thumb" src="" alt="" class="hidden max-h-32 rounded-xl border object-contain mono-image-frame" />
+                <button id="clear-attachment" type="button" class="mono-quiet-link">Очистить</button>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <button id="pick-attachment" type="button" class="glitch-hover inline-flex items-center px-3 py-2 border border-white/20 text-xs text-white/80 hover:text-white">
-                    Файл/изображение
+                <button id="pick-attachment" type="button" class="mono-button-secondary mono-button-secondary--sm inline-flex gap-2">
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M8.5 13.5a3 3 0 004.243 0l3.182-3.182a2.5 2.5 0 10-3.536-3.536L8.853 10.32a1.5 1.5 0 102.121 2.122l2.475-2.475a.75.75 0 111.06 1.06l-2.474 2.476a3 3 0 11-4.243-4.243l3.536-3.536a4 4 0 115.657 5.657l-3.182 3.182a4.5 4.5 0 01-6.364-6.364l4.243-4.242a.75.75 0 011.06 1.06L8.5 9.257a3 3 0 000 4.243z" />
+                    </svg>
+                    <span>Файл</span>
                 </button>
-                <button id="toggle-recording" type="button" class="glitch-hover inline-flex items-center px-3 py-2 border border-white/20 text-xs text-white/80 hover:text-white">
-                    Голосовое
+                <button id="toggle-recording" type="button" class="mono-button-secondary mono-button-secondary--sm inline-flex gap-2">
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M10 13.25A3.25 3.25 0 0013.25 10V6.75a3.25 3.25 0 10-6.5 0V10A3.25 3.25 0 0010 13.25z" />
+                        <path d="M5.75 9.5a.75.75 0 011.5 0 2.75 2.75 0 005.5 0 .75.75 0 011.5 0 4.252 4.252 0 01-3.5 4.181V16h1.5a.75.75 0 010 1.5h-4.5a.75.75 0 010-1.5h1.5v-2.319A4.252 4.252 0 015.75 9.5z" />
+                    </svg>
+                    <span>Голосовое</span>
                 </button>
-                <span id="recording-status" class="text-xs text-white/50"></span>
+                <span id="recording-status" class="mono-caption"></span>
             </div>
 
             @error('body')
-                <p class="text-xs text-red-400">{{ $message }}</p>
+                <p class="mono-error-text">{{ $message }}</p>
             @enderror
             @error('attachment')
-                <p class="text-xs text-red-400">{{ $message }}</p>
+                <p class="mono-error-text">{{ $message }}</p>
             @enderror
             @error('voice')
-                <p class="text-xs text-red-400">{{ $message }}</p>
+                <p class="mono-error-text">{{ $message }}</p>
             @enderror
-            <button type="submit" class="glitch-hover inline-flex items-center px-4 py-2 bg-white text-black text-xs font-semibold uppercase tracking-widest border border-white hover:bg-white/90">
-                Отправить
+            <p class="hidden mono-form-error" data-form-error></p>
+            <button type="submit" class="mono-button-primary">
+                <i class="bi bi-send"></i>
+                <span>Отправить</span>
             </button>
         </form>
     </div>
@@ -88,6 +73,7 @@
         <script>
             window.chatPartnerId = "{{ $user->id }}";
             window.chatCurrentUserId = "{{ auth()->id() }}";
+            window.messageReactionRouteTemplate = @json(route('messages.reactions.store', ['message' => '__MESSAGE__']));
             window.formatChatTimestamp = (value) => {
                 const date = new Date(value);
                 if (Number.isNaN(date.getTime())) {
@@ -106,6 +92,7 @@
             document.addEventListener('DOMContentLoaded', () => {
                 const form = document.getElementById('message-form');
                 const bodyInput = document.getElementById('body');
+                const messagesList = document.getElementById('messages-list');
                 const attachmentInput = document.getElementById('attachment-input');
                 const voiceInput = document.getElementById('voice-input');
                 const pickAttachmentBtn = document.getElementById('pick-attachment');
@@ -135,6 +122,20 @@
                 let audioChunks = [];
                 let isRecording = false;
 
+                const syncComposerHeight = () => {
+                    bodyInput.style.height = 'auto';
+                    const maxHeight = Number.parseInt(getComputedStyle(bodyInput).getPropertyValue('--chat-textarea-max-height'), 10) || 180;
+                    const nextHeight = Math.min(bodyInput.scrollHeight, maxHeight);
+                    bodyInput.style.height = `${nextHeight}px`;
+                    bodyInput.style.overflowY = bodyInput.scrollHeight > maxHeight ? 'auto' : 'hidden';
+                };
+
+                const scrollMessagesToBottom = () => {
+                    if (messagesList) {
+                        messagesList.scrollTop = messagesList.scrollHeight;
+                    }
+                };
+
                 const syncVoiceInput = (file) => {
                     const voiceDt = new DataTransfer();
                     if (file) {
@@ -150,6 +151,12 @@
                     previewImage.src = '';
                     previewImage.classList.add('hidden');
                     previewWrap.classList.add('hidden');
+                    syncComposerHeight();
+                };
+
+                window.resetChatComposer = () => {
+                    clearPreview();
+                    syncComposerHeight();
                 };
 
                 const showPreview = (file) => {
@@ -178,6 +185,9 @@
                         form.requestSubmit();
                     }
                 });
+                bodyInput.addEventListener('input', syncComposerHeight);
+                syncComposerHeight();
+                scrollMessagesToBottom();
 
                 pickAttachmentBtn?.addEventListener('click', () => attachmentInput.click());
 

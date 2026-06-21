@@ -10,9 +10,7 @@ class FeedController extends Controller
     public function index(): View
     {
         $posts = Post::query()
-            ->with(['user', 'comments.user'])
-            ->withCount('likes')
-            ->withExists(['likes as liked' => fn ($q) => $q->where('user_id', auth()->id())])
+            ->with(['user', 'comments', 'comments.replies', 'reactions'])
             ->latest()
             ->paginate(15);
 

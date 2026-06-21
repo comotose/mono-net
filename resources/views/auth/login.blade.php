@@ -27,21 +27,32 @@
         <!-- Remember Me -->
         <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-white/30 bg-black text-white focus:ring-white/40" name="remember">
-                <span class="ms-2 text-sm text-white/60">{{ __('Remember me') }}</span>
+                <input id="remember_me" type="checkbox" class="mono-checkbox" name="remember">
+                <span class="ms-2 text-sm text-[rgb(var(--mono-text-soft))]">{{ __('Remember me') }}</span>
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="mt-4 flex flex-wrap items-center justify-end gap-3">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-white/50 hover:text-white glitch-hover" href="{{ route('password.request') }}">
+                <a class="mono-quiet-link underline text-sm" href="{{ route('password.request') }}">
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
+            <x-primary-button>
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>{{ __('Log in') }}</span>
             </x-primary-button>
         </div>
     </form>
+
+    @if (Route::has('register'))
+        <div class="mt-6 border-t pt-5 mono-divider">
+            <p class="text-sm mono-caption">Нет аккаунта?</p>
+            <a href="{{ route('register') }}" class="mono-button-secondary mt-3 w-full">
+                <i class="bi bi-person-plus"></i>
+                <span>Зарегистрироваться</span>
+            </a>
+        </div>
+    @endif
 </x-guest-layout>

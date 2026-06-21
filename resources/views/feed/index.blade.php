@@ -1,54 +1,62 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-medium text-lg text-white tracking-tight glitch-hover inline-block">Лента</h1>
+        <h1 class="mono-page-title">Лента</h1>
     </x-slot>
 
-    <div class="w-full px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div class="page-shell page-stack py-10">
         @if (session('status') === 'post-created')
-            <p class="text-sm text-white/60 border border-white/10 px-3 py-2">Публикация добавлена.</p>
+            <p class="mono-alert">Публикация добавлена.</p>
         @endif
         @if (session('status') === 'post-deleted')
-            <p class="text-sm text-white/60 border border-white/10 px-3 py-2">Публикация удалена.</p>
+            <p class="mono-alert">Публикация удалена.</p>
         @endif
 
-        <section class="border border-white/15 p-4 space-y-4" x-data="{ open: true }">
-            <button type="button" @click="open = !open" class="glitch-hover text-left w-full text-sm text-white/80 flex justify-between items-center">
+        <section class="mono-surface mono-surface--soft p-5 space-y-4" x-data="{ open: true }">
+            <button type="button" @click="open = !open" class="mono-section-toggle">
                 <span>Новая публикация</span>
-                <span class="text-white/40" x-text="open ? '−' : '+'"></span>
+                <svg class="h-4 w-4 mono-caption transition-transform duration-200" :class="{ 'rotate-180': open }" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
             </button>
             <div x-show="open" x-transition class="space-y-4">
-                <form action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data" class="space-y-4">
+                <form id="post-create-form" action="{{ route('posts.store') }}" method="post" enctype="multipart/form-data" class="space-y-4" data-async-post-form>
                     @csrf
                     <div>
                         <label for="content" class="sr-only">Текст</label>
                         <textarea id="content" name="content" rows="4" required placeholder="Что у вас нового?" class="mono-textarea">{{ old('content') }}</textarea>
                         @error('content')
-                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="mt-1 mono-error-text">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="image" class="text-xs text-white/50">Изображение (необязательно)</label>
-                        <input id="image" name="image" type="file" accept="image/*" class="mt-1 block w-full text-sm text-white/70 file:mr-4 file:py-1 file:px-3 file:border file:border-white/20 file:bg-black file:text-white file:text-xs" />
-                        @error('image')
-                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                        <label for="images" class="mono-field-label">Изображения (до 9)</label>
+                        <input id="images" name="images[]" type="file" accept="image/*" multiple class="mono-file-input mt-1 block w-full" />
+                        <p class="mt-2 mono-caption">Можно выбрать несколько файлов, из них будет собран коллаж.</p>
+                        @error('images')
+                            <p class="mt-1 mono-error-text">{{ $message }}</p>
+                        @enderror
+                        @error('images.*')
+                            <p class="mt-1 mono-error-text">{{ $message }}</p>
                         @enderror
                     </div>
-                    <button type="submit" class="glitch-hover inline-flex items-center px-4 py-2 bg-white text-black text-xs font-semibold uppercase tracking-widest border border-white hover:bg-white/90">
-                        Опубликовать
+                    <p class="hidden mono-form-error" data-form-error></p>
+                    <button type="submit" class="mono-button-primary">
+                        <i class="bi bi-send"></i>
+                        <span>Опубликовать</span>
                     </button>
                 </form>
             </div>
         </section>
 
-        <div class="space-y-8">
+        <div id="posts-list" class="space-y-8">
             @forelse ($posts as $post)
                 @include('posts._card', ['post' => $post])
             @empty
-                <p class="text-white/40 text-sm">Пока нет публикаций. Создайте первую.</p>
+                <p class="mono-empty-state">Пока нет публикаций. Создайте первую.</p>
             @endforelse
         </div>
 
-        <div class="text-white/40 text-xs pt-4">
+        <div class="mono-pagination-wrap pt-4">
             {{ $posts->withQueryString()->links() }}
         </div>
     </div>

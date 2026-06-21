@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -33,20 +32,23 @@ class PostController extends Controller
     {
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:10000'],
-            'image' => ['nullable', 'image', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:9'],
+            'images.*' => ['image', 'max:5120'],
         ], [], [
             'content' => 'текст',
-            'image' => 'изображение',
+            'images' => 'изображения',
+            'images.*' => 'изображение',
         ]);
 
-        $path = null;
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
+        $paths = [];
+        foreach ($request->file('images', []) as $image) {
+            $paths[] = $image->store('posts', 'public');
         }
 
         $post = $request->user()->posts()->create([
             'content' => $validated['content'],
-            'image' => $path,
+            'image' => $paths[0] ?? null,
+            'images' => $paths,
         ]);
 
         $post->load('user');

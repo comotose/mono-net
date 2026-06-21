@@ -1,61 +1,40 @@
-<nav x-data="{ open: false }" class="border-b border-white/10 bg-black">
+<nav x-data="{ open: false }" class="mono-nav-shell">
     @php
         $navUser = Auth::user();
         $unreadNotificationsCount = $navUser->unreadNotifications()->count();
-        $roleLabel = match ($navUser->role) {
-            'admin' => 'Администратор',
-            'moderator' => 'Модератор',
-            default => null,
-        };
     @endphp
-    <div class="w-full px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col gap-3 py-3 sm:py-0 sm:h-14 sm:flex-row sm:justify-between sm:items-center">
+    <div class="page-shell">
+        <div class="py-3 space-y-3">
             <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-6 sm:gap-8 flex-1 min-w-0">
-                    <a href="{{ route('feed.index') }}" class="glitch-hover text-sm font-medium tracking-tight text-white shrink-0">
-                        {{ config('app.name', 'MONO') }}
-                    </a>
-                    <form method="get" action="{{ route('search.friends') }}" class="hidden md:flex flex-1 max-w-[min(280px,100%)]" title="Поиск: Enter">
-                        <input type="search" name="q" value="{{ request('q') }}" placeholder="Поиск… " autocomplete="off" class="mono-search-input text-xs py-1.5" />
-                    </form>
-                    <div class="hidden sm:flex gap-5 items-center shrink-0">
-                        <a href="{{ route('feed.index') }}" class="glitch-hover text-xs {{ request()->routeIs('feed.*') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
-                            Лента
-                        </a>
-                        <a href="{{ route('messages.index') }}" class="glitch-hover text-xs {{ request()->routeIs('messages.*') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
-                            Сообщения
-                        </a>
-                        <a href="{{ route('notifications.index') }}" class="glitch-hover text-xs {{ request()->routeIs('notifications.*') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
-                            Уведомления
-                            @if ($unreadNotificationsCount > 0)
-                                <span class="ml-1 inline-flex min-w-[1.1rem] justify-center px-1 rounded-full border border-white/30 text-[10px] leading-4">
-                                    {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
-                                </span>
-                            @endif
-                        </a>
-                        <a href="{{ route('profile.edit') }}" class="glitch-hover text-xs {{ request()->routeIs('profile.edit') ? 'text-white underline underline-offset-4' : 'text-white/60 hover:text-white' }}">
-                            Настройки
-                        </a>
-                    </div>
-                </div>
+                <a href="{{ route('feed.index') }}" class="glitch-hover text-sm font-medium tracking-tight shrink-0 mono-brand-link">
+                    {{ config('app.name', 'MONO') }}
+                </a>
 
-                <div class="hidden sm:flex sm:items-center gap-4 shrink-0">
-                    <a href="{{ route('profile.show', Auth::user()) }}" class="glitch-hover text-xs text-white/80 hover:text-white max-w-[10rem] truncate">
-                        {{ Auth::user()->name }}
+                <div class="hidden md:flex items-center justify-end gap-3 flex-wrap">
+                    <button type="button" class="mono-theme-toggle" data-theme-toggle>
+                        <i class="bi bi-circle-half"></i>
+                        <span data-theme-label>Светлая тема</span>
+                    </button>
+                    <!-- <button type="button" class="mono-theme-toggle" data-enable-browser-notifications>
+                        <i class="bi bi-bell"></i>
+                        <span>Push</span>
+                    </button> -->
+                    <a href="{{ route('profile.show', Auth::user()) }}" class="mono-profile-link max-w-[12rem] truncate">
+                        <i class="bi bi-person-circle"></i>
+                        <span>{{ Auth::user()->name }}</span>
                     </a>
-                    @if ($roleLabel)
-                        <span class="text-[10px] border border-white/20 px-2 py-0.5 text-white/60">{{ $roleLabel }}</span>
-                    @endif
+                    @include('users._role_badge', ['user' => $navUser])
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="glitch-hover text-xs text-white/50 hover:text-white">
-                            Выйти
+                        <button type="submit" class="mono-quiet-link">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Выйти</span>
                         </button>
                     </form>
                 </div>
 
-                <div class="flex items-center sm:hidden">
-                    <button type="button" @click="open = ! open" class="text-white/70 p-2 rounded-md transition-colors duration-300 hover:bg-white/5" aria-label="Меню">
+                <div class="flex items-center md:hidden">
+                    <button type="button" @click="open = ! open" class="mono-icon-toggle" aria-label="Меню">
                         <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                             <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -64,30 +43,75 @@
                 </div>
             </div>
 
-            <form method="get" action="{{ route('search.friends') }}" class="sm:hidden w-full" title="Поиск: Enter">
-                <input type="search" name="q" value="{{ request('q') }}" placeholder="Поиск друзей — Enter" autocomplete="off" class="mono-search-input text-xs py-2" />
+            <div class="hidden md:flex md:flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
+                <form method="get" action="{{ route('search.friends') }}" class="flex-1 min-w-0 lg:max-w-xl" title="Поиск: Enter">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Поиск людей, почты и описаний" autocomplete="off" class="mono-search-input text-sm py-2.5" />
+                </form>
+
+                <div class="flex flex-wrap items-center gap-4 xl:gap-5 shrink-0">
+                    <a href="{{ route('feed.index') }}" class="mono-nav-link {{ request()->routeIs('feed.*') ? 'is-active' : '' }}">
+                        <i class="bi bi-grid-1x2"></i>
+                        <span>Лента</span>
+                    </a>
+                    <a href="{{ route('messages.index') }}" class="mono-nav-link {{ request()->routeIs('messages.*') ? 'is-active' : '' }}">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Сообщения</span>
+                    </a>
+                    <a href="{{ route('notifications.index') }}" class="mono-nav-link {{ request()->routeIs('notifications.*') ? 'is-active' : '' }}">
+                        <i class="bi bi-bell"></i>
+                        <span>Уведомления</span>
+                        <span data-notification-counter-slot data-counter-class="mono-counter-pill ml-1">
+                            @if ($unreadNotificationsCount > 0)
+                                <span class="mono-counter-pill ml-1" data-notification-counter data-count="{{ $unreadNotificationsCount }}">
+                                    {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                                </span>
+                            @endif
+                        </span>
+                    </a>
+                    <a href="{{ route('profile.edit') }}" class="mono-nav-link {{ request()->routeIs('profile.edit') ? 'is-active' : '' }}">
+                        <i class="bi bi-sliders"></i>
+                        <span>Настройки</span>
+                    </a>
+                </div>
+            </div>
+
+            <form method="get" action="{{ route('search.friends') }}" class="md:hidden w-full" title="Поиск: Enter">
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Поиск людей, почты и описаний" autocomplete="off" class="mono-search-input text-sm py-2.5" />
             </form>
         </div>
     </div>
 
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-white/10">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden mono-mobile-nav">
         <div class="px-4 pt-2 pb-4 space-y-2">
-            <a href="{{ route('feed.index') }}" class="block text-sm text-white/80">Лента</a>
-            <a href="{{ route('messages.index') }}" class="block text-sm text-white/80">Сообщения</a>
-            <a href="{{ route('notifications.index') }}" class="block text-sm text-white/80">
-                Уведомления
-                @if ($unreadNotificationsCount > 0)
-                    ({{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }})
-                @endif
+            <button type="button" class="mono-theme-toggle mono-theme-toggle--mobile" data-theme-toggle>
+                <i class="bi bi-circle-half"></i>
+                <span data-theme-label>Светлая тема</span>
+            </button>
+            <button type="button" class="mono-theme-toggle mono-theme-toggle--mobile" data-enable-browser-notifications>
+                <i class="bi bi-bell"></i>
+                <span>Включить push</span>
+            </button>
+            <a href="{{ route('feed.index') }}" class="mono-mobile-link"><i class="bi bi-grid-1x2"></i><span>Лента</span></a>
+            <a href="{{ route('messages.index') }}" class="mono-mobile-link"><i class="bi bi-chat-dots"></i><span>Сообщения</span></a>
+            <a href="{{ route('notifications.index') }}" class="mono-mobile-link">
+                <i class="bi bi-bell"></i>
+                <span>Уведомления</span>
+                <span data-notification-counter-slot data-counter-class="mono-counter-pill ml-2">
+                    @if ($unreadNotificationsCount > 0)
+                        <span class="mono-counter-pill ml-2" data-notification-counter data-count="{{ $unreadNotificationsCount }}">
+                            {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                        </span>
+                    @endif
+                </span>
             </a>
-            <a href="{{ route('profile.edit') }}" class="block text-sm text-white/80">Настройки</a>
-            <a href="{{ route('profile.show', Auth::user()) }}" class="block text-sm text-white/80">Профиль</a>
-            @if ($roleLabel)
-                <p class="text-xs text-white/40">{{ $roleLabel }}</p>
+            <a href="{{ route('profile.edit') }}" class="mono-mobile-link"><i class="bi bi-sliders"></i><span>Настройки</span></a>
+            <a href="{{ route('profile.show', Auth::user()) }}" class="mono-mobile-link"><i class="bi bi-person-circle"></i><span>Профиль</span></a>
+            @if ($navUser->isAdmin())
+                <p class="mono-caption">{{ $navUser->roleLabel() }}</p>
             @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="text-sm text-white/50">Выйти</button>
+                <button type="submit" class="mono-quiet-link"><i class="bi bi-box-arrow-right"></i><span>Выйти</span></button>
             </form>
         </div>
     </div>

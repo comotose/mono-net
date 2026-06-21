@@ -1,0 +1,49 @@
+%% Приложение А — Диаграмма вариантов использования (UML Use Case)
+%% Экспорт: https://mermaid.live или VS Code Mermaid Preview → PNG/PDF на А4
+
+flowchart TB
+    subgraph actors [Акторы]
+        Guest((Гость))
+        Participant((Участник))
+        Moderator((Модератор))
+        Admin((Администратор))
+    end
+
+    subgraph system [MONO — Социальная платформа]
+        UC01[UC-01 Регистрация]
+        UC02[UC-02 Аутентификация]
+        UC03[UC-03 Создать публикацию]
+        UC04[UC-04 Комментировать]
+        UC05[UC-05 Поставить реакцию]
+        UC06[UC-06 Подписаться]
+        UC07[UC-07 Отправить сообщение]
+        UC08[UC-08 Просмотреть уведомления]
+        UC09[UC-09 Найти пользователя]
+        UC10[UC-10 Редактировать профиль]
+        UC11[UC-11 Удалить чужой пост]
+        UC12[UC-12 Удалить чужой комментарий]
+        UC13[UC-13 Назначить роль]
+    end
+
+    Guest --> UC01
+    Guest --> UC02
+    Participant --> UC02
+    Participant --> UC03
+    Participant --> UC04
+    Participant --> UC05
+    Participant --> UC06
+    Participant --> UC07
+    Participant --> UC08
+    Participant --> UC09
+    Participant --> UC10
+    Moderator --> UC11
+    Moderator --> UC12
+    Admin --> UC13
+
+    UC03 -.->|include| UC02
+    UC04 -.->|include| UC02
+    UC05 -.->|include| UC02
+    UC07 -.->|include| UC02
+
+    Moderator -.->|extends Participant| Participant
+    Admin -.->|extends Moderator| Moderator

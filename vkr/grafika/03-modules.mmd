@@ -1,0 +1,51 @@
+%% Приложение В — Модульная схема программы MONO
+%% ГОСТ 19.701-90 — структурная схема (упрощённая)
+
+flowchart TB
+    subgraph client [Клиентская часть]
+        BLADE[Blade-шаблоны]
+        ALPINE[Alpine.js]
+        TAILWIND[Tailwind CSS]
+        ECHO[Laravel Echo + Pusher]
+        APPJS[app.js / echo-chat.js]
+    end
+
+    subgraph server [Сервер Laravel 10]
+        ROUTES[routes/web.php api.php]
+        subgraph controllers [Контроллеры]
+            AUTH[Auth Controllers]
+            FEED[FeedController PostController]
+            ENG[Comment Reaction Like]
+            PROF[Profile UserProfile Search]
+            CHAT[ChatController]
+            NOTIF[NotificationController]
+        end
+        subgraph domain [Доменный слой]
+            MODELS[Eloquent Models]
+            EVENTS[Events MessageSent]
+            NOTIFY[Notifications]
+        end
+        subgraph infra [Инфраструктура]
+            VALID[Validation Requests]
+            STORAGE[File Storage public disk]
+            BROADCAST[Broadcasting]
+        end
+    end
+
+    subgraph external [Внешние системы]
+        MYSQL[(MySQL)]
+        SOKETI[Soketi WebSocket]
+        FS[Файловая система uploads]
+    end
+
+    BLADE --> APPJS
+    APPJS --> ROUTES
+    ECHO --> SOKETI
+    ROUTES --> controllers
+    controllers --> domain
+    domain --> MYSQL
+    CHAT --> BROADCAST
+    BROADCAST --> SOKETI
+    FEED --> STORAGE
+    CHAT --> STORAGE
+    STORAGE --> FS

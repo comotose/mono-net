@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -20,6 +20,7 @@ class User extends Authenticatable
         'password',
         'avatar',
         'bio',
+        'interest_tags',
         'role',
         'notify_on_message',
         'notify_on_follow',
@@ -35,15 +36,37 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'interest_tags' => 'array',
         'notify_on_message' => 'bool',
         'notify_on_follow' => 'bool',
         'notify_on_like' => 'bool',
         'notify_on_comment' => 'bool',
     ];
 
+    public static function availableRoles(): array
+    {
+        return [
+            'admin' => 'Администратор',
+            'moderator' => 'Модератор',
+            'participant' => 'Участник',
+        ];
+    }
+
+    public function normalizedRole(): string
+    {
+        return $this->role === 'user' || $this->role === null
+            ? 'participant'
+            : $this->role;
+    }
+
+    public function roleLabel(): string
+    {
+        return self::availableRoles()[$this->normalizedRole()] ?? 'Участник';
+    }
+
     public function hasRole(string ...$roles): bool
     {
-        return in_array($this->role, $roles, true);
+        return in_array($this->normalizedRole(), $roles, true);
     }
 
     public function isAdmin(): bool
@@ -69,6 +92,11 @@ class User extends Authenticatable
     public function likes(): HasMany
     {
         return $this->hasMany(Like::class);
+    }
+
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(Reaction::class);
     }
 
     public function following(): BelongsToMany

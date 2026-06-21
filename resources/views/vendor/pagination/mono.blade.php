@@ -1,21 +1,21 @@
 @if ($paginator->hasPages())
-    <nav role="navigation" aria-label="Страницы" class="flex justify-between gap-4">
+    <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}" class="mono-pagination">
         @if ($paginator->onFirstPage())
-            <span class="inline-flex items-center px-3 py-1 text-xs text-white/30 border border-white/10 cursor-default">
+            <span class="mono-pagination-link is-disabled">
                 {!! __('pagination.previous') !!}
             </span>
         @else
-            <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="glitch-hover inline-flex items-center px-3 py-1 text-xs text-white/80 border border-white/20 hover:bg-white/5">
+            <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="mono-pagination-link">
                 {!! __('pagination.previous') !!}
             </a>
         @endif
 
         @if ($paginator->hasMorePages())
-            <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="glitch-hover inline-flex items-center px-3 py-1 text-xs text-white/80 border border-white/20 hover:bg-white/5">
+            <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="mono-pagination-link">
                 {!! __('pagination.next') !!}
             </a>
         @else
-            <span class="inline-flex items-center px-3 py-1 text-xs text-white/30 border border-white/10 cursor-default">
+            <span class="mono-pagination-link is-disabled">
                 {!! __('pagination.next') !!}
             </span>
         @endif
